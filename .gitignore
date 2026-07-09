@@ -1,0 +1,5 @@
+node_modules
+test-mongo.js
+uploads
+.env
+package-lock.json
