@@ -82,6 +82,7 @@ app.use((req, res, next) => {
 	next();
 });
 
+// Contact form submit
 app.post('/api/contact', (req, res) => {
 	const db = req.db;
 	const contact_col = db.get('Contact');
@@ -106,12 +107,13 @@ app.post('/api/contact', (req, res) => {
 	})
 })
 
+// Get all contact messages + dropdown options (FIXED SORT SYNTAX)
 app.get('/api/contact', (req, res) => {
 	const db = req.db;
 	const contact_col = db.get('Contact');
 	const option_col = db.get('contact_option');
 	Promise.all([
-		contact_col.find({ $sort: { _id: -1 } }),
+		contact_col.find({}, { sort: { _id: -1 } }),
 		option_col.find()
 	]).then(([contact_list, option_list]) => {
 		const returnJson = { contact_list, option_list };
@@ -120,16 +122,18 @@ app.get('/api/contact', (req, res) => {
 	})
 })
 
+// Get latest news (FIXED SORT SYNTAX)
 app.get('/api/news', (req, res) => {
 	const db = req.db;
 	const news_col = db.get('News');
-	news_col.find().sort({ updateTime: -1 }).limit(1).then(docs => {
+	news_col.find({}, { sort: { updateTime: -1 }, limit: 1 }).then(docs => {
 		const returnJson = { news: docs[0] || {} };
 		const final = Object.assign(returnJson, req.common);
 		res.json(final);
 	})
 })
 
+// Save / update news
 app.post('/api/news/save', (req, res) => {
 	const db = req.db;
 	const news_col = db.get('News');
@@ -152,6 +156,7 @@ app.post('/api/news/save', (req, res) => {
 	})
 })
 
+// Fallback route for root
 app.get('*', (req, res) => {
 	res.json(req.common);
 })
