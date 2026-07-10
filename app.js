@@ -165,11 +165,15 @@ app.post('/api/news/save', (req, res) => {
 app.delete("/api/clear-all-contact", (req, res) => {
   const db = req.db;
   const contact_col = db.get('Contact');
-  contact_col.remove({}).then(() => {
-    res.json({ success: true, msg: "All contact messages cleared" });
+  contact_col.remove({}, { multi: true }).then(deleteResult => {
+    // monk returns { n: number of deleted docs }
+    res.json({ 
+      success: true, 
+      msg: `Cleared ${deleteResult.n} contact messages` 
+    });
   }).catch(err => {
-    console.error(err);
-    res.json({ success: false, msg: "Clear failed" });
+    console.error("Clear error:", err);
+    res.json({ success: false, msg: "Database delete error" });
   });
 });
 
