@@ -8,7 +8,12 @@ const monk = require('monk');
 const multer = require('multer');
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
+}));
+app.options("*", cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..')));
 
@@ -156,6 +161,18 @@ app.post('/api/news/save', (req, res) => {
 	})
 })
 
+// Clear all contact messages
+app.delete("/api/clear-all-contact", (req, res) => {
+  const db = req.db;
+  const contact_col = db.get('Contact');
+  contact_col.remove({}).then(() => {
+    res.json({ success: true, msg: "All contact messages cleared" });
+  }).catch(err => {
+    console.error(err);
+    res.json({ success: false, msg: "Clear failed" });
+  });
+});
+
 // Fallback route for root
 app.get('*', (req, res) => {
 	res.json(req.common);
@@ -164,13 +181,3 @@ app.get('*', (req, res) => {
 app.listen(server_port, () => {
 	console.log("100H2 Server running on port " + server_port);
 })
-
-// Clear all contact messages
-app.delete("/api/clear-all-contact", async (req, res) => {
-  try {
-    await Contact.deleteMany({});
-    res.json({ success: true, msg: "All contact messages cleared" });
-  } catch (err) {
-    res.json({ success: false, msg: "Clear failed" });
-  }
-});
